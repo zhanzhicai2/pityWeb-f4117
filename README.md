@@ -81,5 +81,9 @@ pity是一款专注于api自动化的工具，采用`Python`+`FastApi`+`React`�
 
 ## 交流群
 
+## 添加package一些包的版本信息
+- [] node v14.21.0
+- [] npm 6.14.17
+
 ![](https://gitee.com/woodywrx/picture/raw/master/2021-12-11/1639202661521-%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20211209210042.png)
 =======
