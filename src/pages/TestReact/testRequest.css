@@ -1,0 +1,205 @@
+/* src/App.css */
+/* 基础样式 */
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.main-title {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.main-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, #1890ff, #52c41a);
+    border-radius: 2px;
+}
+
+.subtitle {
+    display: block;
+    font-size: 16px;
+    font-weight: normal;
+    color: #666;
+    margin-top: 10px;
+}
+
+/* 控制面板样式 */
+.control-panel {
+    margin-bottom: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.panel-title {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.panel-title::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #ff4d4f, #faad14);
+    border-radius: 2px;
+}
+
+.control-group {
+    background: rgba(24, 144, 255, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #1890ff;
+}
+
+.control-group h3 {
+    margin-bottom: 10px;
+    color: #1890ff;
+    display: flex;
+    align-items: center;
+}
+
+.control-group h3::before {
+    content: "◆";
+    margin-right: 8px;
+    color: #ff4d4f;
+}
+
+/* 卡片容器 */
+.cards-container {
+    margin: 30px 0;
+}
+
+/* 卡片样式 */
+.animated-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+/* 伪元素装饰 - 卡片顶部装饰条 */
+.animated-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: var(--card-color);
+    z-index: 2;
+}
+
+/* 伪元素装饰 - 卡片边框 */
+.animated-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: var(--border-width) var(--border-style) var(--border-color);
+    border-radius: 12px;
+    z-index: -1;
+    transition: all 0.4s ease;
+}
+
+/* 悬停效果 */
+.animated-card:hover {
+    transform: scale(var(--scale-factor));
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.animated-card:hover::after {
+    border-color: #1890ff;
+}
+
+/* 卡片图片区域 */
+.card-image {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.card-icon {
+    font-size: 64px;
+    z-index: 2;
+}
+
+/* 卡片动画效果 */
+.card-animation {
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-duration: 0.8s;
+    animation-delay: calc(var(--card-order) * 0.2s);
+}
+
+.fadeIn {
+    animation-name: fadeIn;
+}
+
+.slideIn {
+    animation-name: slideIn;
+}
+
+.zoom {
+    animation-name: zoom;
+}
+
+.rotate {
+    animation-name: rotate;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(50px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes zoom {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rotate {
+    from { opacity: 0; transform: rotate(-5deg) scale(0.9); }
+    to { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+/* 信息卡片 */
+.info-card {
+    margin-top: 40px;
+    border-radius: 12px;
+    border-left: 4px solid #52c41a;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .control-panel .ant-col {
+        margin-bottom: 20px;
+    }
+
+    .control-group {
+        padding: 10px;
+    }
+}
