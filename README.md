@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## 项目地址 🖕
 
 [官方文档 🍚](http://pity.readthedocs.org/)
@@ -81,3 +82,7 @@ pity是一款专注于api自动化的工具，采用`Python`+`FastApi`+`React`�
 ## 交流群
 
 ![](https://gitee.com/woodywrx/picture/raw/master/2021-12-11/1639202661521-%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20211209210042.png)
+=======
+# pityWeb-f4117
+重新设置pityWeb-f4117，之前的仓库有问题无法合并
+>>>>>>> 8533dcfdadd1bf7aa9bd0b4b8eb2327648cb69db
