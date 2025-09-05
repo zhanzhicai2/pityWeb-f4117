@@ -7,6 +7,7 @@ import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 import { currentUser as queryCurrentUser, LoginUser } from './services/auth';
 import React from 'react';
+// @ts-ignore
 import NoTableData from '@/assets/NoSearch.svg';
 
 import { ConfigProvider, Empty, message, Spin } from 'antd';
