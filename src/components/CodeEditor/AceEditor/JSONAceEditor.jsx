@@ -8,7 +8,7 @@ import "ace-builds/src-noconflict/ext-spellcheck";
 import './MaterialOneDark'; // pg模式包
 import {addCompleter} from 'ace-builds/src-noconflict/ext-language_tools';
 import "ace-builds/src-noconflict/mode-json"
-// import ace from '../../../../public/monaco/vs/loader';
+import ace from '../../../../public/monaco/vs/loader';
 
 ace.config.setModuleUrl("ace/mode/json_worker", jsonWorkerUrl)
 

@@ -1,5 +1,5 @@
-import {PageContainer} from "@ant-design/pro-layout";
-import {connect, useParams} from 'umi';
+import {PageContainer} from "@ant-design/pro-components";
+import {connect, useParams} from '@umijs/max';
 import {Avatar, Card, Col, Empty, Row, Statistic} from "antd";
 import styles from './UserInfo.less';
 import HeatMap from "@/components/Charts/HeatMap";
@@ -9,6 +9,7 @@ import OperationLog from "@/components/Operation/OperationLog";
 import noRecord from "@/assets/no_record.svg";
 import {LikeOutlined, UserOutlined} from "@ant-design/icons";
 import LoadingFailed from '@/assets/LoadingFailed.svg';
+import CONFIG from "@/consts/config";
 
 const today = new Date()
 
@@ -25,7 +26,7 @@ const Workspace = ({user, dispatch}) => {
   const {userMap, operationLog, activities} = user;
 
   const getContent = currentUser => {
-    if (currentUser === undefined || currentUser ===null) {
+    if (currentUser === undefined || currentUser === null) {
       return <Empty description="努力加载中..." image={LoadingFailed}/>
     }
     return (
@@ -33,11 +34,11 @@ const Workspace = ({user, dispatch}) => {
         <div className={styles.pageHeaderContent}>
           <div className={styles.avatar}>
             <Avatar size="large"
-                    src={currentUser?.avatar || `https://joeschmoe.io/api/v1/${currentUser.name}`}/>
+                    src={currentUser?.avatar || CONFIG.AVATAR_URL}/>
           </div>
           <div className={styles.content}>
             <div className={styles.contentTitle}>
-              {currentUser.name} {currentUser.default_at ? "(已注销)": null }
+              {currentUser.name} {currentUser.deleted_at ? "(已注销)" : null}
             </div>
             <div>
               {currentUser.email} {currentUser.nickname}
@@ -104,7 +105,8 @@ const Workspace = ({user, dispatch}) => {
           {getContent(userMap[userId])}
           <Row gutter={16} className={styles.statisticsCard}>
             <Col span={12}>
-              <Statistic title="注册时间" valueStyle={{ color: '#1890ff' }} value={getRegisterDays(userMap[userId])} prefix={<UserOutlined/>} suffix="天"/>
+              <Statistic title="注册时间" valueStyle={{color: '#1890ff'}} value={getRegisterDays(userMap[userId])}
+                         prefix={<UserOutlined/>} suffix="天"/>
             </Col>
             <Col span={12}>
               <Statistic title="参与项目" value={0} prefix={<LikeOutlined/>}/>

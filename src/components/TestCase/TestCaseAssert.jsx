@@ -3,10 +3,10 @@ import { ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import FormForModal from '@/components/PityForm/FormForModal';
 import fields from '@/consts/fields';
 import React, { useState } from 'react';
-import { connect } from 'umi';
+import {connect} from "@umijs/max";
 import auth from '@/utils/auth';
 import NoRecord from '@/components/NotFound/NoRecord';
-import { CONFIG } from '@/consts/config';
+import CONFIG from "@/consts/config";
 
 const TestCaseAssert = ({ dispatch, testcase, caseId, createMode }) => {
   const [assertModal, setAssertModal] = useState(false);
@@ -45,7 +45,7 @@ const TestCaseAssert = ({ dispatch, testcase, caseId, createMode }) => {
       title: '类型',
       key: 'assert_type',
       dataIndex: 'assert_type',
-      render: (text) => CONFIG.ASSERT_TYPE_TAG[text],
+      render: (text) => CONFIG.ASSERT_TYPE[text],
     },
     {
       title: '预期结果',
@@ -160,7 +160,7 @@ const TestCaseAssert = ({ dispatch, testcase, caseId, createMode }) => {
     <Row gutter={8}>
       <Col span={24}>
         <FormForModal
-          visible={assertModal}
+          open={assertModal}
           fields={fields.CaseAsserts}
           title="用例断言"
           left={6}

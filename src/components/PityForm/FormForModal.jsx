@@ -5,7 +5,7 @@ import getComponent from './index';
 const {Item: FormItem} = Form;
 
 const FormForModal = ({
-                        title, width, left, right, formName, record, onFinish, loading, fields, visible, onCancel, offset=0,
+                        title, width, left, right, formName, record, onFinish, loading, fields, open, onCancel, offset=0,
                         children,Footer,onTest}) => {
   const [form] = Form.useForm();
   const onOk = () => {
@@ -32,7 +32,7 @@ const FormForModal = ({
                  onTest(values);
                })
              }}/>:undefined}
-      title={title} width={width} visible={visible} onOk={onOk} onCancel={onCancel}>
+      title={title} width={width} open={open} onOk={onOk} onCancel={onCancel}>
       {children || null}
       <Form
         form={form}

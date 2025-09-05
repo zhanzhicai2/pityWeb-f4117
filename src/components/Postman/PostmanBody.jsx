@@ -21,7 +21,7 @@ import {httpRequest} from '@/services/request';
 import auth from '@/utils/auth';
 import {listGConfig} from "@/services/configure";
 import FormData from "@/components/Postman/FormData";
-import {connect} from 'umi';
+import {connect} from '@umijs/max';
 import JSONAceEditor from "@/components/CodeEditor/AceEditor/JSONAceEditor";
 import {IconFont} from "@/components/Icon/IconFont";
 
@@ -69,7 +69,6 @@ const PostmanBody = ({
   const [headersKeys, setHeadersKeys] = useState(() => headers.map((item) => item.id));
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState({});
-  const [options, setOptions] = useState([]);
   const [url, setUrl] = useState('');
   const [editor, setEditor] = useState(null);
   const [open, setOpen] = useState(false);
@@ -109,20 +108,13 @@ const PostmanBody = ({
     })
   }, [])
 
-
-  useEffect(async () => {
-    const res = await listGConfig({page: 1, size: 500});
-    if (auth.response(res)) {
-      const data = res.data.map((v) => ({
-        label: <Tooltip title={<pre>{v.value}</pre>}>
-          <div>{v.key}</div>
-        </Tooltip>, value: `$\{${v.key}\}`, key: v.id
-      }))
-      data.unshift({label: <a onClick={() => setOpen(false)}>收起</a>})
-      setOptions(data);
-    }
+  const init = async () => {
     setUrl(form.getFieldValue('url'));
     splitUrl(form.getFieldValue('url'))
+  }
+
+  useEffect(() => {
+    init()
   }, [body])
 
 
@@ -385,8 +377,7 @@ const PostmanBody = ({
                 return option.children.props.children.indexOf(input.toLowerCase()) >= 0
               }}
       >
-        <Option value={null} label="无">无<a style={{float: 'right', fontSize: 12}} href="/#/config/address"
-                                             target="_blank">去配置</a></Option>
+        <Option value={null} label="无">无<a style={{float: 'right', fontSize: 12}} href="/#/config/address">去配置</a></Option>
         {
           Object.keys(currentAddress).map(key => <Option value={key} key={key} label={key}><Tooltip title={
             <div>
@@ -441,25 +432,6 @@ const PostmanBody = ({
                          form.setFieldsValue({url: e.target.value})
                          setUrl(e.target.value);
                        }}/>
-                {/*<AutoComplete*/}
-                {/*  open={open}*/}
-                {/*  options={options}*/}
-                {/*  placeholder="请输入要请求的url"*/}
-                {/*  onChange={(string, e) => {*/}
-                {/*    if (e.key && url && url.indexOf(string) === -1) {*/}
-                {/*      const value = `${url}${string}`*/}
-                {/*      splitUrl(value);*/}
-                {/*      form.setFieldsValue({url: value})*/}
-                {/*      setUrl(value);*/}
-                {/*    } else {*/}
-                {/*      splitUrl(string);*/}
-                {/*      form.setFieldsValue({url: string});*/}
-                {/*      setUrl(string);*/}
-                {/*    }*/}
-                {/*  }}*/}
-                {/*>*/}
-                {/*  <Input addonBefore={prefixSelector}/>*/}
-                {/*</AutoComplete>*/}
               </Form.Item>
             </Col>
           </Form>
@@ -538,7 +510,7 @@ const PostmanBody = ({
         {Object.keys(response).length === 0 ? null : (
           <Tabs style={{width: '100%'}} tabBarExtraContent={tabExtra(response)}>
             <TabPane tab="Body" key="1">
-              <JSONAceEditor value={response.response} readOnly={true}
+              <JSONAceEditor value={typeof response?.response === 'object' ? JSON.stringify(response.response, null, 2): response.response} readOnly={true}
                              height="30vh" setEditor={setEditor}/>
             </TabPane>
             <TabPane tab="Cookie" key="2">

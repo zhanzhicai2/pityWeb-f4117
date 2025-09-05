@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useState } from 'react';
-import {PageContainer} from '@ant-design/pro-layout';
+import {PageContainer} from '@ant-design/pro-components';
 import {
   Avatar,
   Button,
@@ -31,7 +31,7 @@ import {process} from '@/utils/utils';
 import {listUsers} from '@/services/user';
 import noRecord from '@/assets/no_record.svg'
 import UserLink from "@/components/Button/UserLink";
-import {CONFIG} from "@/consts/config";
+import CONFIG from "@/consts/config";
 import styles from './Project.less';
 import UserSelect from "@/components/User/UserSelect";
 import {IconFont} from "@/components/Icon/IconFont";
@@ -208,7 +208,7 @@ const Project = ({dispatch, project, loading}) => {
         left={6}
         right={18}
         record={{private: false}}
-        visible={visible}
+        open={visible}
         onCancel={() => setVisible(false)}
         fields={fields}
         onFinish={onHandleCreate}

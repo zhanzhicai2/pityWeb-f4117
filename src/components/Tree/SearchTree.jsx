@@ -126,11 +126,11 @@ export default ({treeData: gData, blockNode = true, onAddNode, menu, selectedKey
                       onClick={(event) =>{
                         event.stopPropagation();
                         onAddNode(node)}}
-                      className="left"
+                      className="icon-left"
                     />
                     <Dropdown overlay={menu(node)} trigger="click">
                       <MoreOutlined
-                        className="right"
+                        className="icon-right"
                         onClick={e => e.stopPropagation()}
                       />
                     </Dropdown>

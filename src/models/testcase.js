@@ -154,7 +154,7 @@ export default {
             caseInfo: res.data.case,
             asserts: res.data.asserts,
             // constructors: res.data.constructors.map((v, index) => ({...v, index})),
-            // 2022-04-23 拆分前后置条件
+            // 2022-04-23 拆分前后置步骤
             preConstructor: res.data.constructors.filter(v => v.suffix === false).map((v, index) => ({ ...v, index })),
             postConstructor: res.data.constructors.filter(v => v.suffix === true).map((v, index) => ({ ...v, index })),
             constructors_case: res.data.constructors_case,

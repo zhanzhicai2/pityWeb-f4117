@@ -1,27 +1,48 @@
-import {Badge, Button, Card, Col, Modal, Row, Switch, Tabs, Tag, Timeline} from "antd";
-import {IconFont} from "@/components/Icon/IconFont";
-import TooltipIcon from "@/components/Icon/TooltipIcon";
+import { IconFont } from '@/components/Icon/IconFont';
+import TooltipIcon from '@/components/Icon/TooltipIcon';
+import NoRecord from '@/components/NotFound/NoRecord';
+import NoRecord2 from '@/components/NotFound/NoRecord2';
+import PostmanForm from '@/components/Postman/PostmanForm';
+import SortedTable from '@/components/Table/SortedTable';
+import TestCaseAssert from '@/components/TestCase/TestCaseAssert';
+import TestcaseData from '@/components/TestCase/TestcaseData';
+import TestCaseOutParameters from '@/components/TestCase/TestCaseOutParameters';
+import VariableModal from '@/components/TestCase/variableModal';
+import CONFIG from '@/consts/config';
+import { listGConfig } from '@/services/configure';
+import { queryVars } from '@/services/testcase';
+import auth from '@/utils/auth';
+import common from '@/utils/common';
 import {
   DeleteTwoTone,
+  DownOutlined,
   EditTwoTone,
   ExclamationCircleOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
-  SaveOutlined
-} from "@ant-design/icons";
-import TestcaseData from "@/components/TestCase/TestcaseData";
-import NoRecord2 from "@/components/NotFound/NoRecord2";
-import NoRecord from "@/components/NotFound/NoRecord";
-import SortedTable from "@/components/Table/SortedTable";
-import PostmanForm from "@/components/Postman/PostmanForm";
-import TestCaseAssert from "@/components/TestCase/TestCaseAssert";
-import React from "react";
-import {CONFIG} from "@/consts/config";
-import {connect} from 'umi';
-import TestCaseOutParameters from "@/components/TestCase/TestCaseOutParameters";
-import common from '@/utils/common';
+} from '@ant-design/icons';
+import { connect } from '@umijs/max';
+import { useKeyPress } from 'ahooks';
+import {
+  Badge,
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  Image,
+  message,
+  Modal,
+  Row,
+  Space,
+  Switch,
+  Tabs,
+  Tag,
+  Timeline,
+  Tour,
+} from 'antd';
+import { useEffect, useRef, useState } from 'react';
 
-const {TabPane} = Tabs
+const { TabPane } = Tabs;
 
 const TestCaseBottom = ({
   dispatch,
@@ -42,9 +63,136 @@ const TestCaseBottom = ({
   setBodyType,
   loading,
 }) => {
-  const { preConstructor,postConstructor, activeKey, constructors_case, envActiveKey, asserts, caseInfo } = testcase;
+  const {
+    preConstructor,
+    postConstructor,
+    activeKey,
+    constructors_case,
+    envActiveKey,
+    asserts,
+    caseInfo,
+  } = testcase;
   const { envList } = gconfig;
 
+  const [variableModal, setVariableModal] = useState(false);
+  const [gconfigVars, setGconfigVars] = useState([]);
+  const [caseVars, setCaseVars] = useState([]);
+  const [tour, setTour] = useState(localStorage.getItem('case_study') === null);
+  const [currentEnv, setCurrentEnv] = useState(null);
+
+  const dataRef = useRef(null);
+  const preRef = useRef(null);
+  const sufRef = useRef(null);
+  const reqRef = useRef(null);
+  const assertRef = useRef(null);
+  const outRef = useRef(null);
+
+  // 环境列表菜单
+  const envItems = envList.map((item) => ({
+    key: item.id,
+    label: (
+      <a
+        onClick={() => {
+          setCurrentEnv(item.name);
+          message.success('测试环境已切换至' + item.name);
+        }}
+      >
+        {item.name}
+      </a>
+    ),
+  }));
+
+  const onQueryCaseVars = async (steps) => {
+    const params = steps.map((item) => ({ case_id: item.case_id, step_name: item.name }));
+    const res = await queryVars(params);
+    if (auth.response(res)) {
+      setCaseVars(Object.keys(res.data).map((k) => res.data[k]));
+    }
+  };
+
+  const steps = [
+    {
+      title: '数据管理',
+      placement: 'right',
+      description: '数据管理模块，以数据驱动的方式批量请求接口，解决重复编写场景的烦恼~👻',
+      cover: <Image width="100%" style={{ height: 200 }} src="/data_driven.jpeg" />,
+      target: () => dataRef.current,
+    },
+    {
+      title: '前置步骤',
+      placement: 'right',
+      description:
+        '在前置步骤中，你可以构造一切你需要的数据，包括但不限于DB/Redis等，并能将数据传递下去👀',
+      cover: <Image width="100%" style={{ height: 200 }} src="/pre.svg" />,
+      target: () => preRef.current,
+    },
+    {
+      title: '接口请求',
+      placement: 'right',
+      description:
+        '在接口请求中，你可以构建HTTP/DUBBO/GRPC这3类请求，如果遇到有变量需要填写，可以按下快捷键『$』弹出变量菜单哦~🐬',
+      cover: <Image width="100%" style={{ height: 200 }} src="/api.svg" />,
+      target: () => reqRef.current,
+    },
+    {
+      title: '出参提取',
+      placement: 'left',
+      description:
+        '在出参提取中，你可以提取你在下一个步骤中需要的数据, 比如你可以提取登录后的token，用于接下来的操作！出参提取主要支持正则和JSONPath2种方式，如果还不熟悉的话，建议去搜索学习一下哦~👽',
+      cover: <Image width="100%" style={{ height: 200 }} src="/out.svg" />,
+      target: () => outRef.current,
+    },
+    {
+      title: '断言',
+      placement: 'left',
+      description:
+        '在断言中，你可以对你本次测试的数据进行校验，以便于后续场景自动执行时能检测出异常，断言很重要，记得要填哦！🎃',
+      cover: <Image width="100%" style={{ height: 200 }} src="/assert.svg" />,
+      target: () => assertRef.current,
+    },
+    {
+      title: '后置步骤',
+      placement: 'left',
+      description:
+        '在后置步骤中，你可以做一些清理工作，比如删除你创建的数据等，用法与前置步骤类似~🚀',
+      cover: <Image width="100%" style={{ height: 200 }} src="/clean.svg" />,
+      target: () => sufRef.current,
+    },
+  ];
+
+  // 监听键盘事件，弹出变量菜单
+  useKeyPress(
+    ['shift.4'],
+    () => {
+      if (
+        activeKey !== '4' &&
+        window.location.href.indexOf(`/apiTest/testcase/`) > -1 &&
+        window.location.href.endsWith(`/${case_id}`)
+      ) {
+        setVariableModal(true);
+      }
+    },
+    {
+      exactMatch: true,
+      useCapture: true,
+    },
+  );
+
+  const onFetchGConfigData = async () => {
+    const res = await listGConfig({ page: 1, size: 500 });
+    if (auth.response(res)) {
+      setGconfigVars(res.data.map((item) => ({ name: '${' + item.key + '}' })));
+    }
+  };
+
+  // 获取全局变量
+  useEffect(() => {
+    onFetchGConfigData();
+  }, []);
+
+  useEffect(() => {
+    onQueryCaseVars(preConstructor);
+  }, [preConstructor]);
 
   const onCreateConstructor = () => {
     dispatch({
@@ -56,7 +204,7 @@ const TestCaseBottom = ({
           enable: true,
         },
         currentStep: 0,
-        constructRecord: {}
+        constructRecord: {},
       },
     });
     dispatch({
@@ -66,22 +214,21 @@ const TestCaseBottom = ({
   };
 
   // 删除数据构造器
-  const onDeleteConstructor = async (record,suffix=false) => {
+  const onDeleteConstructor = async (record, suffix = false) => {
     const res = await dispatch({
       type: 'construct/delete',
       payload: { id: record.id },
     });
     if (res) {
       let newData;
-      if (suffix){
+      if (suffix) {
         newData = postConstructor.filter((v) => v.id !== record.id);
-
-      }else {
-        newData = preConstructor.filter(v => v.id !== record.id)
+      } else {
+        newData = preConstructor.filter((v) => v.id !== record.id);
       }
       dispatch({
         type: 'testcase/save',
-        payload: { [!suffix ? "preConstructor" : "postConstructor"]: newData },
+        payload: { [!suffix ? 'preConstructor' : 'postConstructor']: newData },
       });
     }
   };
@@ -89,12 +236,17 @@ const TestCaseBottom = ({
   // 删除本地数据构造器
   const onDeleteConstructorLocal = async (record, suffix) => {
     const newData = [...(!suffix ? preConstructor : postConstructor)];
-    newData.splice(record.index, 1)
+    newData.splice(record.index, 1);
     dispatch({
       type: 'testcase/save',
-      payload: {[!suffix ? "preConstructor" : "postConstructor"]: newData.map((v, index) => ({...v, index}))}
-    })
-  }
+      payload: {
+        [!suffix ? 'preConstructor' : 'postConstructor']: newData.map((v, index) => ({
+          ...v,
+          index,
+        })),
+      },
+    });
+  };
 
   const getJson = (record, json_data) => {
     if (record.type === 4) {
@@ -105,10 +257,10 @@ const TestCaseBottom = ({
         url: json_data.url,
         request_method: json_data.request_method,
         body_type: json_data.body_type,
-      }
+      };
     }
-    return json_data
-  }
+    return json_data;
+  };
 
   // 编辑数据构造器
   const onEditConstructor = (record) => {
@@ -127,13 +279,13 @@ const TestCaseBottom = ({
     });
   };
 
-  const onSwitchConstructor = async (record, value,suffix=false) => {
+  const onSwitchConstructor = async (record, value, suffix = false) => {
     let res;
-    const newData = [...(!suffix ? preConstructor : postConstructor)]
-    if(createMode){
-      res =true;
-    }else {
-       res = await dispatch({
+    const newData = [...(!suffix ? preConstructor : postConstructor)];
+    if (createMode) {
+      res = true;
+    } else {
+      res = await dispatch({
         type: 'construct/update',
         payload: {
           ...record,
@@ -142,22 +294,22 @@ const TestCaseBottom = ({
       });
     }
     if (res) {
-      if(createMode){
+      if (createMode) {
         newData.forEach((v, index) => {
           if (index === record.index) {
-            v.enable = value
+            v.enable = value;
           }
-        })
+        });
       } else {
-        newData.forEach(v => {
+        newData.forEach((v) => {
           if (v.id === record.id) {
-            v.enable = value
+            v.enable = value;
           }
-        })
+        });
       }
       dispatch({
         type: 'testcase/save',
-        payload: { [!suffix ? "preConstructor" : "postConstructor"]: newData },
+        payload: { [!suffix ? 'preConstructor' : 'postConstructor']: newData },
       });
     }
   };
@@ -172,11 +324,7 @@ const TestCaseBottom = ({
       return (
         <div>
           用例:{' '}
-          <a
-            href={`/#/apiTest/testcase/${result.directory_id}/${result.id}`}
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href={`/#/apiTest/testcase/${result.directory_id}/${result.id}`} rel="noreferrer">
             {result.name}
           </a>
         </div>
@@ -201,32 +349,38 @@ const TestCaseBottom = ({
       );
     }
   };
-  const BadgeButton = ({number,bgColor,color,style}) => {
+
+  const BadgeButton = ({ number, bgColor, color, style }) => {
     if (number === 0) {
       return null;
     }
-    return <div style={{
-      display: 'inline-block',
-      marginLeft: '2',
-      textAlign: 'center',
-      width: '24',
-      borderRadius:10,
-      backgroundColor:color,
-      color,
-      ...style,
-
-    }}>{number}</div>;
-  }
+    return (
+      <div
+        style={{
+          display: 'inline-block',
+          marginLeft: 2,
+          textAlign: 'center',
+          width: 24,
+          borderRadius: 10,
+          background: bgColor,
+          color,
+          ...style,
+        }}
+      >
+        {number}
+      </div>
+    );
+  };
 
   const columns = [
     {
       title: '名称',
       key: 'name',
       dataIndex: 'name',
-      render: (text, record,index) => (
+      render: (text, record, index) => (
         <a
           onClick={() => {
-            onEditConstructor({...record, tempIndex: index});
+            onEditConstructor({ ...record, tempIndex: index });
           }}
         >
           {text}
@@ -267,11 +421,11 @@ const TestCaseBottom = ({
       title: '操作',
       key: 'ops',
       className: 'drag-visible',
-      render: (_, record,index) => (
+      render: (_, record, index) => (
         <>
           <a
             onClick={() => {
-              onEditConstructor({...record, tempIndex: index});
+              onEditConstructor({ ...record, tempIndex: index });
             }}
           >
             <EditTwoTone />
@@ -287,10 +441,10 @@ const TestCaseBottom = ({
                 okType: 'danger',
                 cancelText: '点错了',
                 onOk: async () => {
-                  if(createMode){
-                    await onDeleteConstructorLocal(record)
-                  }else {
-                    await onDeleteConstructor(record)
+                  if (createMode) {
+                    await onDeleteConstructorLocal(record);
+                  } else {
+                    await onDeleteConstructor(record);
                   }
                 },
               });
@@ -305,6 +459,20 @@ const TestCaseBottom = ({
 
   return (
     <Row gutter={8} style={{ marginTop: 36, minHeight: 500 }}>
+      <VariableModal
+        open={variableModal}
+        gconfig={gconfigVars}
+        variables={caseVars}
+        onCancel={() => setVariableModal(false)}
+      />
+      <Tour
+        open={tour}
+        onClose={() => {
+          localStorage.setItem('case_study', 'done');
+          setTour(false);
+        }}
+        steps={steps}
+      />
       <Col span={24}>
         <Tabs
           activeKey={activeKey}
@@ -312,8 +480,8 @@ const TestCaseBottom = ({
             dispatch({
               type: 'testcase/save',
               payload: { activeKey: key },
-            })
-            setSuffix(key === '6')
+            });
+            setSuffix(key === '6');
             if (key === '1' && envList.length > 0) {
               dispatch({
                 type: 'testcase/save',
@@ -322,10 +490,39 @@ const TestCaseBottom = ({
                 },
               });
             }
-          }} tabBarExtraContent={createMode ? null: <Button style={{marginRight: 8}} onClick={()=>{
-            onSubmit(false)
-        }}><SaveOutlined/>保存</Button>}>
-          <TabPane key="5" tab={<span><IconFont type="icon-shujuqudong1" />数据管理
+          }}
+          tabBarExtraContent={
+            <Dropdown menu={{ items: envItems }}>
+              <a
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+              >
+                <Space>
+                  {currentEnv || '选择当前执行环境'}
+                  <DownOutlined />
+                </Space>
+              </a>
+            </Dropdown>
+            // createMode ? null : (
+            //   <Button
+            //     style={{ marginRight: 8 }}
+            //     onClick={() => {
+            //       onSubmit(false);
+            //     }}
+            //   >
+            //     <SaveOutlined />
+            //     保存
+            //   </Button>
+            // )
+          }
+        >
+          <TabPane
+            key="1"
+            tab={
+              <span ref={dataRef}>
+                <IconFont type="icon-shujuqudong1" />
+                数据管理{' '}
                 <TooltipIcon
                   onClick={() => {
                     window.open(
@@ -333,7 +530,7 @@ const TestCaseBottom = ({
                     );
                   }}
                   icon={<QuestionCircleOutlined />}
-                  title="在这里你可以对多套环境的测试数据进行管理，从而达到数据驱动的目的~"
+                  title="在这里你可以对多套环境的测试数据进行管理，从而达到数据驱动的目的~点击此按钮查看详细文档。"
                 />
               </span>
             }
@@ -351,33 +548,32 @@ const TestCaseBottom = ({
               >
                 {envList.map((item) => (
                   <TabPane key={item.id} tab={item.name}>
-                    <TestcaseData caseId={case_id} currentEnv={envActiveKey} createMode={createMode} />
+                    <TestcaseData
+                      caseId={case_id}
+                      currentEnv={envActiveKey}
+                      createMode={createMode}
+                    />
                   </TabPane>
                 ))}
               </Tabs>
             ) : (
               <NoRecord2
                 height={280}
-                desc={
-                  <span>
-                    没有任何环境信息,{' '}
-                    {
-                      <a href="/#/config/environment" target="_blank">
-                        去添加
-                      </a>
-                    }
-                  </span>
-                }
+                desc={<span>没有任何环境信息, {<a href="/#/config/environment">去添加</a>}</span>}
               />
             )}
           </TabPane>
           <TabPane
             key="2"
             tab={
-              <div>
+              <div ref={preRef}>
                 <IconFont type="icon-DependencyGraph_16x" />
-                前置条件
-                <BadgeButton number={preConstructor.length} bgColor="rgb(237,242,251)" color="rgb(29,98,203)"/>
+                前置步骤
+                <BadgeButton
+                  number={preConstructor.length}
+                  bgColor="rgb(237, 242, 251)"
+                  color="rgb(29, 98, 203)"
+                />
               </div>
             }
           >
@@ -386,7 +582,7 @@ const TestCaseBottom = ({
                 height={180}
                 desc={
                   <div>
-                    还没有前置条件, 这不 <a onClick={onCreateConstructor}>添加一个</a>?
+                    还没有前置步骤, 还不赶快 <a onClick={onCreateConstructor}>添加一个</a>?
                   </div>
                 }
               />
@@ -421,7 +617,7 @@ const TestCaseBottom = ({
                       loading.effects['construct/delete'] || loading.effects['construct/update']
                     }
                     dragCallback={async (newData) => {
-                      if(createMode) {
+                      if (createMode) {
                         return true;
                       }
                       return await dispatch({
@@ -433,11 +629,12 @@ const TestCaseBottom = ({
                 </Col>
                 <Col span={8}>
                   <Card style={{ height: 400, overflow: 'auto' }} hoverable bordered={false}>
-                    {
-                      preConstructor.filter(item => item.enable).length === 0 ? <NoRecord2 desc="暂无开启的前置条件"/> : <Timeline>
-                        {
-                          preConstructor.map((item, index) =>
-                          item.enable ?
+                    {preConstructor.filter((item) => item.enable).length === 0 ? (
+                      <NoRecord2 desc="暂无开启的前置步骤" />
+                    ) : (
+                      <Timeline>
+                        {preConstructor.map((item, index) =>
+                          item.enable ? (
                             <Timeline.Item key={index}>
                               <div key={index}>
                                 <Badge
@@ -449,10 +646,11 @@ const TestCaseBottom = ({
                                 {item.type === 0 ? <a key={item.name}>{item.name}</a> : item.name}
                               </div>
                               {getDesc(item)}
-                            </Timeline.Item> : null )
-                        }
+                            </Timeline.Item>
+                          ) : null,
+                        )}
                       </Timeline>
-                    }
+                    )}
                   </Card>
                 </Col>
               </Row>
@@ -461,7 +659,7 @@ const TestCaseBottom = ({
           <TabPane
             key="3"
             tab={
-              <span>
+              <span ref={reqRef}>
                 <IconFont type="icon-qingqiu" />
                 接口请求
               </span>
@@ -486,14 +684,37 @@ const TestCaseBottom = ({
               </Col>
             </Row>
           </TabPane>
-          <TabPane key="4" tab={<span><IconFont type="icon-canshu2"/>出参提取
-            <TooltipIcon icon={<QuestionCircleOutlined/>} title="通过管理请求产生的参数，帮助我们更好地改善【断言】"/></span>}>
-            <TestCaseOutParameters caseId={case_id} createMode={createMode} dispatch={dispatch} testcase={testcase}/>
+          <TabPane
+            key="4"
+            tab={
+              <span ref={outRef}>
+                <IconFont type="icon-canshu2" />
+                出参提取{' '}
+                <TooltipIcon
+                  icon={<QuestionCircleOutlined />}
+                  title="通过管理请求产生的参数，帮助我们更好地改善【断言】"
+                />
+              </span>
+            }
+          >
+            <TestCaseOutParameters
+              caseId={case_id}
+              createMode={createMode}
+              dispatch={dispatch}
+              testcase={testcase}
+            />
           </TabPane>
-          <TabPane key="5" tab={<div><IconFont type="icon-duanyan" />
-                断言
-              <BadgeButton number={asserts.length} bgColor="rgb(233, 249, 245)"
-                           color="rgb(40, 195, 151)"/>
+          <TabPane
+            key="5"
+            tab={
+              <div ref={assertRef}>
+                <IconFont type="icon-duanyan" />
+                断言{' '}
+                <BadgeButton
+                  number={asserts.length}
+                  bgColor="rgb(233, 249, 245)"
+                  color="rgb(40, 195, 151)"
+                />
               </div>
             }
           >
@@ -502,11 +723,14 @@ const TestCaseBottom = ({
           <TabPane
             key="6"
             tab={
-              <div>
+              <div ref={sufRef}>
                 <IconFont type="icon-qingliwuliuliang" />
-                后置条件
-                <BadgeButton number={postConstructor.length} bgColor="rgb(255, 238, 239)"
-                             color="rgb(255, 87, 95)"/>
+                后置步骤
+                <BadgeButton
+                  number={postConstructor.length}
+                  bgColor="rgb(255, 238, 239)"
+                  color="rgb(255, 87, 95)"
+                />
               </div>
             }
           >
@@ -515,7 +739,7 @@ const TestCaseBottom = ({
                 height={180}
                 desc={
                   <div>
-                    还没有后置条件, 这不 <a onClick={onCreateConstructor}>添加一个</a>?
+                    还没有后置步骤, 还不赶紧 <a onClick={onCreateConstructor}>添加一个</a>?
                   </div>
                 }
               />
@@ -562,27 +786,28 @@ const TestCaseBottom = ({
                 </Col>
                 <Col span={8}>
                   <Card style={{ height: 400, overflow: 'auto' }} hoverable bordered={false}>
-                    {
-                      postConstructor.filter(item => item.enable).length === 0 ? <NoRecord desc="暂无开启的后置条件"/> :
-                        <Timeline>
-                          {postConstructor.map((item, index) =>
-                            item.enable ? (
-                              <Timeline.Item key={index}>
-                                <div key={index}>
-                                  <Badge
-                                    count={index + 1}
-                                    key={index}
-                                    style={{ backgroundColor: '#a6d3ff' }}
-                                  />{' '}
-                                  名称:{' '}
-                                  {item.type === 0 ? <a key={item.name}>{item.name}</a> : item.name}
-                                </div>
-                                {getDesc(item)}
-                              </Timeline.Item>
-                            ) : null,
-                          )}
-                        </Timeline>
-                    }
+                    {postConstructor.filter((item) => item.enable).length === 0 ? (
+                      <NoRecord desc="暂无开启的后置步骤" />
+                    ) : (
+                      <Timeline>
+                        {postConstructor.map((item, index) =>
+                          item.enable ? (
+                            <Timeline.Item key={index}>
+                              <div key={index}>
+                                <Badge
+                                  count={index + 1}
+                                  key={index}
+                                  style={{ backgroundColor: '#a6d3ff' }}
+                                />{' '}
+                                名称:{' '}
+                                {item.type === 0 ? <a key={item.name}>{item.name}</a> : item.name}
+                              </div>
+                              {getDesc(item)}
+                            </Timeline.Item>
+                          ) : null,
+                        )}
+                      </Timeline>
+                    )}
                   </Card>
                 </Col>
               </Row>
@@ -594,4 +819,6 @@ const TestCaseBottom = ({
   );
 };
 
-export default connect(({testcase, gconfig, loading}) => ({testcase, gconfig, loading}))(TestCaseBottom);
+export default connect(({ testcase, gconfig, loading }) => ({ testcase, gconfig, loading }))(
+  TestCaseBottom,
+);

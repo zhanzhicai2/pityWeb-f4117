@@ -1,5 +1,5 @@
-import { PageContainer } from '@ant-design/pro-layout';
-import { connect } from 'umi';
+import {PageContainer} from "@ant-design/pro-components";
+import {connect} from "@umijs/max";
 import {
   Alert,
   Avatar,
@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from 'antd';
 import React, { useEffect } from 'react';
-import { CONFIG } from '@/consts/config';
+import CONFIG from "@/consts/config";
 import { PlusOutlined,QuestionCircleOutlined } from '@ant-design/icons';
 import TestPlanForm from '@/components/TestCase/TestPlanForm';
 import UserLink from '@/components/Button/UserLink';
@@ -130,7 +130,7 @@ const TestPlan = ({ testplan, dispatch, loading, gconfig, user, project }) => {
       key: 'project_id',
       dataIndex: 'project_id',
       render: (projectId) => (
-        <a href={`'/#/project/${projectId}`} target="_blank" rel="noreferrer">
+        <a href={`'/#/project/${projectId}`} rel="noreferrer">
           {projectsMap[projectId] || 'loading'}
         </a>
       ),
@@ -259,7 +259,7 @@ const TestPlan = ({ testplan, dispatch, loading, gconfig, user, project }) => {
   return (
     <><Alert message="行测试计划前，记得修改测试计划接收人, 这样就能收到邮件通知啦😈~..."
              description="tips: 执行测试计划前，记得修改测试计划里面的人员信息, 这样就能收到邮件通知啦~"
-             style={{marginBottom:36}} type="info" banner closable />
+             style={{marginBottom:16}} type="info" banner closable />
     <PageContainer title={false} breadcrumb={null}>
       <Card>
         <TestPlanForm fetchTestPlan={fetchTestPlan} />

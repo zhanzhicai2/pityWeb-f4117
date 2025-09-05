@@ -2,6 +2,7 @@ import { Avatar, List } from 'antd';
 import React from 'react';
 import classNames from 'classnames';
 import styles from './NoticeList.less';
+import CONFIG from "@/consts/config";
 
 const NoticeList = ({
   data = [],

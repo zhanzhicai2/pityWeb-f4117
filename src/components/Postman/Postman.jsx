@@ -1,26 +1,40 @@
-import React, {useState} from 'react';
-import {Button, Card, Col, Dropdown, Input, Menu, notification, Radio, Row, Select, Table, Tabs,} from 'antd';
-import {DeleteTwoTone, DownOutlined, EditTwoTone, SendOutlined} from '@ant-design/icons';
+import JSONAceEditor from '@/components/CodeEditor/AceEditor/JSONAceEditor';
+import { IconFont } from '@/components/Icon/IconFont';
+import FormData from '@/components/Postman/FormData';
 import EditableTable from '@/components/Table/EditableTable';
-import {httpRequest} from '@/services/request';
-import {connect} from 'umi'
+import { httpRequest } from '@/services/request';
 import auth from '@/utils/auth';
-import FormData from "@/components/Postman/FormData";
-import {IconFont} from "@/components/Icon/IconFont";
-import JSONAceEditor from "@/components/CodeEditor/AceEditor/JSONAceEditor";
+import { DeleteTwoTone, DownOutlined, EditTwoTone } from '@ant-design/icons';
+import { PageContainer } from '@ant-design/pro-components';
+import { connect } from '@umijs/max';
+import {
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  Input,
+  Menu,
+  notification,
+  Radio,
+  Row,
+  Select,
+  Table,
+  Tabs,
+} from 'antd';
+import { useState } from 'react';
 
-const {Option} = Select;
-const {TabPane} = Tabs;
+const { Option } = Select;
+const { TabPane } = Tabs;
 
 const STATUS = {
-  200: {color: '#67C23A', text: 'OK'},
-  401: {color: '#F56C6C', text: 'unauthorized'},
-  400: {color: '#F56C6C', text: 'Bad Request'},
+  200: { color: '#67C23A', text: 'OK' },
+  401: { color: '#F56C6C', text: 'unauthorized' },
+  400: { color: '#F56C6C', text: 'Bad Request' },
 };
 
 const tabExtra = (response) => {
   return response && response.response ? (
-    <div style={{marginRight: 16}}>
+    <div style={{ marginRight: 16 }}>
       <span>
         Status:
         <span
@@ -33,15 +47,15 @@ const tabExtra = (response) => {
           {response.status_code}{' '}
           {STATUS[response.status_code] ? STATUS[response.status_code].text : ''}
         </span>
-        <span style={{marginLeft: 8, marginRight: 8}}>
-          Time: <span style={{color: '#67C23A'}}>{response.cost}</span>
+        <span style={{ marginLeft: 8, marginRight: 8 }}>
+          Time: <span style={{ color: '#67C23A' }}>{response.cost}</span>
         </span>
       </span>
     </div>
   ) : null;
 };
 
-const Postman = ({loading: gloading, gconfig, dispatch}) => {
+const Postman = ({ loading: gloading, gconfig, dispatch }) => {
   const [bodyType, setBodyType] = useState(0);
   const [rawType, setRawType] = useState('JSON');
   const [method, setMethod] = useState('GET');
@@ -55,7 +69,7 @@ const Postman = ({loading: gloading, gconfig, dispatch}) => {
   const [formData, setFormData] = useState([]);
   const [editor, setEditor] = useState(null);
 
-  const {ossFileList} = gconfig;
+  const { ossFileList } = gconfig;
 
   // 请求url+params
   const [url, setUrl] = useState('');
@@ -64,12 +78,20 @@ const Postman = ({loading: gloading, gconfig, dispatch}) => {
     <Select
       value={method}
       onChange={(data) => setMethod(data)}
-      style={{width: 120, fontSize: 16, textAlign: 'left'}}
+      style={{ width: 120, fontSize: 16, textAlign: 'left' }}
     >
-      <Option key="GET" value="GET">GET</Option>
-      <Option key="POST" value="POST">POST</Option>
-      <Option key="PUT" value="PUT">PUT</Option>
-      <Option key="DELETE" value="DELETE">DELETE</Option>
+      <Option key="GET" value="GET">
+        GET
+      </Option>
+      <Option key="POST" value="POST">
+        POST
+      </Option>
+      <Option key="PUT" value="PUT">
+        PUT
+      </Option>
+      <Option key="DELETE" value="DELETE">
+        DELETE
+      </Option>
     </Select>
   );
 
@@ -125,7 +147,7 @@ const Postman = ({loading: gloading, gconfig, dispatch}) => {
         const [key, value] = item.split('=');
         const now = Date.now();
         keys.push(now + idx + 10);
-        newParams.push({key, value, id: now + idx + 10, description: ''});
+        newParams.push({ key, value, id: now + idx + 10, description: '' });
       });
       setParamsData(newParams);
       setEditableRowKeys(keys);
@@ -159,7 +181,7 @@ const Postman = ({loading: gloading, gconfig, dispatch}) => {
     const params = {
       method,
       url,
-      body: bodyType === 2 ? JSON.stringify(formData): body,
+      body: bodyType === 2 ? JSON.stringify(formData) : body,
       body_type: bodyType,
       headers: getHeaders(),
     };
@@ -258,13 +280,13 @@ const Postman = ({loading: gloading, gconfig, dispatch}) => {
           return (
             <>
               <EditTwoTone
-                style={{cursor: 'pointer'}}
+                style={{ cursor: 'pointer' }}
                 onClick={() => {
-                  setEditableRowKeys([record.id])
+                  setEditableRowKeys([record.id]);
                 }}
               />
               <DeleteTwoTone
-                style={{cursor: 'pointer', marginLeft: 8}}
+                style={{ cursor: 'pointer', marginLeft: 8 }}
                 onClick={() => {
                   onDelete(columnType, record.id);
                 }}
@@ -277,142 +299,163 @@ const Postman = ({loading: gloading, gconfig, dispatch}) => {
     ];
   };
 
-  const getBody = bd => {
+  const getBody = (bd) => {
     if (bd === 0) {
-      return <div style={{height: '20vh', lineHeight: '20vh', textAlign: 'center'}}>
-        This request does not have a body
-      </div>
+      return (
+        <div style={{ height: '20vh', lineHeight: '20vh', textAlign: 'center' }}>
+          This request does not have a body
+        </div>
+      );
     }
     if (bd === 2) {
-      return <FormData ossFileList={ossFileList} dataSource={formData} setDataSource={setFormData}/>
+      return (
+        <FormData ossFileList={ossFileList} dataSource={formData} setDataSource={setFormData} />
+      );
     }
-    return <Row style={{marginTop: 12}}>
-      <Col span={24}>
-        <Card bodyStyle={{padding: 0}}>
-          <JSONAceEditor value={body} onChange={e => setBody(e)} height="20vh" setEditor={setEditor}/>
-        </Card>
-      </Col>
-    </Row>
-  }
+    return (
+      <Row style={{ marginTop: 12 }}>
+        <Col span={24}>
+          <Card bodyStyle={{ padding: 0 }}>
+            <JSONAceEditor
+              value={body}
+              onChange={(e) => setBody(e)}
+              height="20vh"
+              setEditor={setEditor}
+            />
+          </Card>
+        </Col>
+      </Row>
+    );
+  };
 
   return (
-    <Card title="在线HTTP测试工具">
-      <Row gutter={[8, 8]}>
-        <Col span={18}>
-          <Input
-            size="large"
-            value={url}
-            addonBefore={selectBefore}
-            placeholder="请输入要请求的url"
-            onChange={(e) => {
-              setUrl(e.target.value);
-              splitUrl(e.target.value);
-            }}
-          />
-        </Col>
-        <Col span={6}>
-          <Button
-            onClick={onRequest}
-            loading={loading}
-            type="primary"
-            size="large"
-            style={{marginRight: 16, float: 'right'}}
-          >
-            <IconFont type="icon-fasong1"/>
-            Send{' '}
-          </Button>
-        </Col>
-      </Row>
-      <Row style={{marginTop: 8}}>
-        <Tabs defaultActiveKey="1" style={{width: '100%'}}>
-          <TabPane tab="Params" key="1">
-            <EditableTable
-              columns={columns('params')}
-              title="Query Params"
-              dataSource={paramsData}
-              setDataSource={setParamsData}
-              extra={joinUrl}
-              editableKeys={editableKeys}
-              setEditableRowKeys={setEditableRowKeys}
+    <PageContainer title="在线HTTP测试工具" breadcrumb={null}>
+      <Card>
+        <Row gutter={[8, 8]}>
+          <Col span={18}>
+            <Input
+              size="large"
+              value={url}
+              addonBefore={selectBefore}
+              placeholder="请输入要请求的url"
+              onChange={(e) => {
+                setUrl(e.target.value);
+                splitUrl(e.target.value);
+              }}
             />
-          </TabPane>
-          <TabPane tab="Headers" key="2">
-            <EditableTable
-              columns={columns('headers')}
-              title="Headers"
-              dataSource={headers}
-              setDataSource={setHeaders}
-              editableKeys={headersKeys}
-              setEditableRowKeys={setHeadersKeys}
-            />
-          </TabPane>
-          <TabPane tab="Body" key="3">
-            <Row>
-              <Radio.Group
-                defaultValue={0}
-                value={bodyType}
-                onChange={(e) => {
-                  setBodyType(e.target.value)
-                  if (e.target.value === 2) {
-                    // 获取oss文件
-                    dispatch({
-                      type: 'gconfig/listOssFile'
-                    })
-                  }
-                }}
-              >
-                <Radio value={0}>none</Radio>
-                <Radio value={2}>form-data</Radio>
-                <Radio value={3}>x-www-form-urlencoded</Radio>
-                <Radio value={1}>raw</Radio>
-                <Radio value={4}>binary</Radio>
-                <Radio value={5}>GraphQL</Radio>
-              </Radio.Group>
-              {bodyType === 1 ? (
-                <Dropdown style={{marginLeft: 8}} overlay={menu} trigger={['click']}>
-                  <a onClick={(e) => e.preventDefault()}>
-                    {rawType} <DownOutlined/>
-                  </a>
-                </Dropdown>
-              ) : null}
-            </Row>
-            {getBody(bodyType)}
-          </TabPane>
-        </Tabs>
-      </Row>
-      <Row gutter={[8, 8]}>
-        {Object.keys(response).length === 0 ? null : (
-          <Tabs style={{width: '100%'}} tabBarExtraContent={tabExtra(response)}>
-            <TabPane tab="Body" key="1">
-              <JSONAceEditor
-                readOnly={true}
-                setEditor={setEditor}
-                language={response.response && response.response_headers.indexOf("json") > -1 ? 'json' : 'text'}
-                value={response.response && typeof response.response === 'object' ? JSON.stringify(response.response, null, 2) : response.response || ''}
-                height="30vh"
+          </Col>
+          <Col span={6}>
+            <Button
+              onClick={onRequest}
+              loading={loading}
+              type="primary"
+              size="large"
+              style={{ marginRight: 16, float: 'right' }}
+            >
+              <IconFont type="icon-fasong1" />
+              Send{' '}
+            </Button>
+          </Col>
+        </Row>
+        <Row style={{ marginTop: 8 }}>
+          <Tabs defaultActiveKey="1" style={{ width: '100%' }}>
+            <TabPane tab="Params" key="1">
+              <EditableTable
+                columns={columns('params')}
+                title="Query Params"
+                dataSource={paramsData}
+                setDataSource={setParamsData}
+                extra={joinUrl}
+                editableKeys={editableKeys}
+                setEditableRowKeys={setEditableRowKeys}
               />
             </TabPane>
-            <TabPane tab="Cookie" key="2">
-              <Table
-                columns={resColumns}
-                dataSource={toTable('cookies')}
-                size="small"
-                pagination={false}
+            <TabPane tab="Headers" key="2">
+              <EditableTable
+                columns={columns('headers')}
+                title="Headers"
+                dataSource={headers}
+                setDataSource={setHeaders}
+                editableKeys={headersKeys}
+                setEditableRowKeys={setHeadersKeys}
               />
             </TabPane>
-            <TabPane tab="Headers" key="3">
-              <Table
-                columns={resColumns}
-                dataSource={toTable('response_headers')}
-                size="small"
-                pagination={false}
-              />
+            <TabPane tab="Body" key="3">
+              <Row>
+                <Radio.Group
+                  defaultValue={0}
+                  value={bodyType}
+                  onChange={(e) => {
+                    setBodyType(e.target.value);
+                    if (e.target.value === 2) {
+                      // 获取oss文件
+                      dispatch({
+                        type: 'gconfig/listOssFile',
+                      });
+                    }
+                  }}
+                >
+                  <Radio value={0}>none</Radio>
+                  <Radio value={2}>form-data</Radio>
+                  <Radio value={3}>x-www-form-urlencoded</Radio>
+                  <Radio value={1}>raw</Radio>
+                  <Radio value={4}>binary</Radio>
+                  <Radio value={5}>GraphQL</Radio>
+                </Radio.Group>
+                {bodyType === 1 ? (
+                  <Dropdown style={{ marginLeft: 8 }} overlay={menu} trigger={['click']}>
+                    <a onClick={(e) => e.preventDefault()}>
+                      {rawType} <DownOutlined />
+                    </a>
+                  </Dropdown>
+                ) : null}
+              </Row>
+              {getBody(bodyType)}
             </TabPane>
           </Tabs>
-        )}
-      </Row>
-    </Card>
+        </Row>
+        <Row gutter={[8, 8]}>
+          {Object.keys(response).length === 0 ? null : (
+            <Tabs style={{ width: '100%' }} tabBarExtraContent={tabExtra(response)}>
+              <TabPane tab="Body" key="1">
+                <JSONAceEditor
+                  readOnly={true}
+                  setEditor={setEditor}
+                  language={
+                    response.response && response.response_headers.indexOf('json') > -1
+                      ? 'json'
+                      : 'text'
+                  }
+                  value={
+                    response.response && typeof response.response === 'object'
+                      ? JSON.stringify(response.response, null, 2)
+                      : response.response || ''
+                  }
+                  height="30vh"
+                />
+              </TabPane>
+              <TabPane tab="Cookie" key="2">
+                <Table
+                  columns={resColumns}
+                  dataSource={toTable('cookies')}
+                  size="small"
+                  pagination={false}
+                />
+              </TabPane>
+              <TabPane tab="Headers" key="3">
+                <Table
+                  columns={resColumns}
+                  dataSource={toTable('response_headers')}
+                  size="small"
+                  pagination={false}
+                />
+              </TabPane>
+            </Tabs>
+          )}
+        </Row>
+      </Card>
+    </PageContainer>
   );
 };
 
-export default connect(({loading, gconfig}) => ({loading, gconfig}))(Postman);
+export default connect(({ loading, gconfig }) => ({ loading, gconfig }))(Postman);

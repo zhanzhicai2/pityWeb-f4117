@@ -1,8 +1,8 @@
 import { memo, useEffect, useState } from 'react';
-import { connect } from 'umi';
-import { PageContainer } from '@ant-design/pro-layout';
+import {connect} from "@umijs/max";
+import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, message, Row, Select, Table, Tag } from 'antd';
-import { CONFIG } from '@/consts/config';
+import CONFIG from "@/consts/config";
 import TooltipTextIcon from '@/components/Icon/TooltipTextIcon';
 import FormForModal from '@/components/PityForm/FormForModal';
 import { PlusOutlined } from '@ant-design/icons';
@@ -153,7 +153,7 @@ const onDelete = async (record) => {
   return (
     <PageContainer title="请求质地管理" breadcrumb={null}>
       <Card>
-        <FormForModal visible={modal} fields={fields} title={item.id ? "修改地址":"添加地址"}left={6} right={18} record={item}
+        <FormForModal open={modal} fields={fields} title={item.id ? "修改地址":"添加地址"}left={6} right={18} record={item}
                       onFinish={onSubmit} onCancel={() => setModal(false)}/>
         <Form form={form} {...CONFIG.LAYOUT} onVolumeChange={fetchAddress}>
           <Row gutter={12}>

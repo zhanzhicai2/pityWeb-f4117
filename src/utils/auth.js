@@ -30,8 +30,8 @@ export default {
     if (res.code === 401) {
       // 说明用户未认证
       // message.info(res.msg);
-      localStorage.setItem('pityToken', null);
-      localStorage.setItem('pityUser', null);
+      localStorage.removeItem('pityToken');
+      localStorage.removeItem('pityUser');
       // if (window.location.href.indexOf("/user/login") === -1){
       //   history.replace({
       //     pathname: '/user/login',
@@ -71,8 +71,8 @@ export default {
     if (res.code === 401) {
       // 说明用户未认证
       // message.info(res.msg);
-      localStorage.setItem('pityToken', null);
-      localStorage.setItem('pityUser', null);
+      localStorage.removeItem('pityToken');
+      localStorage.removeItem('pityUser');
       // window.location.href = '/user/login';
 
       // if (window.location.href.indexOf("/user/login") === -1) {
